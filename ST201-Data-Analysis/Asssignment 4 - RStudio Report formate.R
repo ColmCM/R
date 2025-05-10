@@ -1,6 +1,6 @@
 #20325583, Colm Mooney.
 
-#Suppose a Normal Distribution has µ = 100 and ?? = 10.
+#Suppose a Normal Distribution has Âµ = 100 and ?? = 10.
 #(a) Plot the probability density function for this distribution. Use values in the range 50 to 150 for creating the plot.
 test <- dnorm(50:150, mean = 100, sd = 10)
 graph <- data.frame("Range:" = 50:150, "Density" = test)
