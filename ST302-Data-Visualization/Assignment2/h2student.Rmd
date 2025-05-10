@@ -1,0 +1,180 @@
+---
+title: "Assignment 2 ST302"
+author: "Colm Mooney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=F, warning=F)
+```
+
+
+
+```{r}
+#install.packages(c("vcd", "vcdExtra", "ggmosaic", "effects"))
+library(vcd)
+library(ggmosaic)
+library(tidyverse)
+library(vcdExtra)
+library(effects)
+```
+
+
+## Question 1. (DONE)
+```{r}
+d <- data.frame(as.table(MSPatients))
+glimpse(d)
+```
+
+a. Based on the information below, how do the distributions of the ratings of the neurologists compare? How would you describe their rating patterns? What geom is used here?
+
+
+Very High Frequency of Certainty for Winnipeg. Least 95%.
+A little over 50% Frequency for Certainty for New Orleans.
+
+There is an equal amount of Frequency for Probable in New Orleans and Winnipeg.
+The lowest recorded Frequency is for Possible. Slightly lower than 25% for Winnipeg.
+
+The Frequency recorded for Possible in New Orleans is about 55%.
+
+Doubtful has the lowest recorded frequency for New Orleans at about 43%.
+Doubtful has a frequency of about 35% for Winnipeg.
+
+New Orleans Neurologist's distribution is more consistent with the data compared to Winnipeg, as in the 4 possibilities roughly have the same values. 
+However, Winnipeg's seems to be the better Neurologist as he has a 95% Certainty Frequency.
+
+The geom being used here is geom_col()
+
+---------------
+
+b. Here are two plots and a summarised dataset that compare the ratings of the two neurologists for the patients. What geoms are used in these plots? Comment on the agreement between the two raters.
+
+geom_col & geom_mosaic are being used in these plots.
+
+These plots are awful. Genuinely extremely confusing to read.
+i much prefer it being side to side like in Question A.
+I understand that it works that the Certain of W.N is being compared to the o4 in N.O.N and the same for 
+Probable, Possible & Doubtful.
+The second graph is better than he third though.
+
+---------------
+## Question 2 (Done)
+
+```{r}
+require(gridExtra)
+plot1 <- ggplot(d , aes(x = New.Orleans.Neurologist, y = Freq)) + geom_col(fill = "darkgray")
+plot2 <- ggplot(d , aes(x = Winnipeg.Neurologist, y = Freq)) + geom_col(fill = "darkgray")
+grid.arrange(plot1, plot2, ncol=2)
+
+
+#This is a the second plot
+ggplot(d, aes(x= Winnipeg.Neurologist, y = Freq, fill = New.Orleans.Neurologist))+geom_col()
+
+#This is the third plot:
+ggplot(d) + geom_mosaic(aes(weight = Freq, x = product(Winnipeg.Neurologist), fill = New.Orleans.Neurologist))
+```
+
+### The Table (Done)
+```{r}
+d %>% group_by(Winnipeg.Neurologist, New.Orleans.Neurologist) %>% tally(Freq) %>% mutate(prop = n / sum(n))
+```
+
+## Question 3
+```{r}
+glimpse(TitanicSurvival)
+```
+
+a. Calculate the dataset Age as in the code below. What does unite do? (DONE)
+```{r}
+TitanicSurvival |> group_by(survived,passengerClass,sex) |> 
+  summarize(age=mean(age, na.rm=T)) |>
+  unite(survived, passengerClass, sex, col="group", remove = FALSE) -> age
+
+TitanicSurvival %>% group_by(age)
+#Unite() allows you to combine multiple data columns into a single data column from a data frame.
+
+```
+
+
+b.
+
+```{r}
+#Part 1
+ggplot(age, aes(x = age, y = reorder(group, age)))+geom_pointrange(xmin = 0, aes(xmax = age))
+
+
+
+#Part 2
+ColorPlot <- age %>% unite(passengerClass, sex, col = "class.sex", sep = "-")
+
+#ggplot(data = ColorPlot, aes(x = age, y = reorder(group, age), color = class.sex))+ geom_pointrange(xmin = 0, aes(xmas = age))
+
+```
+
+
+c.What do you learn from the plot below? Write code to construct the plot.
+From the plot below, we can see that
+```{r}
+ggplot(ColorPlot, aes(x=age, y = class.sex, fill= survived))+ geom_boxplot()
+
+```
+
+
+## Question 4 (Done)
+
+```{r}
+check <- data.frame(source("http://www.openintro.org/stat/data/cdc.R"))
+
+```
+a.
+
+```{r}
+ggplot(data = check, mapping = aes(x=value.height, y=value.weight)) + geom_point()
+```
+
+b.
+```{r}
+Jam <- ggplot(data = check, mapping = aes(x=value.height, y=value.weight)) +geom_jitter(size=.1, alpha =.5)
+Jam
+```
+
+c.
+```{r}
+Jam + geom_bin2d()+scale_fill_gradient(low = "yellow", high = "blue")
+
+Jam + geom_hex()+scale_fill_gradient(low = "yellow", high = "blue")
+```
+
+d.
+```{r}
+Jam + geom_density2d()
+
+Jam + stat_density2d(aes(fill = after_stat(level)), geom = "polygon") +
+ scale_fill_gradient(low = "wheat", high = "blue")
+```
+
+#Question 5: (Done)
+a. How do the distributions of occupations of the sons in the 3 countries compare?
+
+Uk = Highest LoM, Lowest Farm & Lowest LoNM from data. UpM is nearly on par with UpM of US.
+USA = Comparing UK to US data, structure is very similar. LoM are both the highest values, Farm the loqest, LoNM is the second lowest.
+However, notably, there are more UPNM from US than UK.
+Japan is the most different from the set of 3. Very middling all around. Notably, Farm is still the lowest but the highest level for Japan is LoNM.
+
+b. How do the distributions of the sons' and fathers' occupations in the UK compare?
+
+Similar UpM & LoNM rating for Both.
+3 times higher Farm rating for Father than Son.
+LoM is largest distribution for both Son and Father. Slightly higher for Father.
+UpNM distribution is twice as big for Son than Father.
+
+c.
+```{r}
+Yamaguchi87 <- data.frame((Yamaguchi87))
+ggplot(Yamaguchi87, aes(x=Son, weight = Freq, y = after_stat(prop), group=Country)) + geom_bar() + facet_wrap(vars(Country))
+
+filter(Yamaguchi87, Country == "UK") |>
+  pivot_longer(c(Son,Father), names_to = "person", values_to = "Class") |>
+  ggplot(aes(x=person, y = Freq, fill=Class)) + geom_col(position="fill") + xlab("") + ylab("")
+```
