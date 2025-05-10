@@ -1,0 +1,229 @@
+---
+title: "Assignment 1 ST302"
+author: "your name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=F)
+
+
+```
+
+
+
+
+
+## Question 1. 
+## Describe the different steps in the evolution of the plot in the video.
+
+
+Picture 1:
+First picture is a boxplot. The code looks something like this:
+ggplot(DATA, aes(x=region, y=student_ratio))+geom_boxplot() + labs(title = "The Evolution of a ggplot")
+
+Picture 2:
+The boxplot is grouped from the region with the highest student ratio to the lowest.
+
+Picture 3:
+Clear Change in vector. From top to bottom, it now shows  lowest student ratio to the highest.
+
+Picture 4:
+The x-axis changes from showing grids in groups of 20, to groups of 25
+
+Picture 5:
+Color is added to distinguish each continent from each other visually.
+
+Picture 6:
+Violin plots of Student Ratios in all regions. Again, Drawn on the horizontal axis.
+
+Picture 7:
+We can now see each individual sample from each continent. However, now the data is harder to read.
+
+Picture 8:
+Each circle has become transparent and we can now see where each sample is better. Especially in Europe.
+
+Picture 10.:
+A boxplot is overlaid on the data. It has only the outline and isn't filled in with color. However, the fact the data is still isn a straight line makes it hard to read individual values.
+
+Picture 11:
+The dots are spread out from each other but still gives the the correct student to teacher ratio. Allows us to more clearly see the individual samples.
+
+Picture 12:
+Boxplot is removed.
+
+Picture 13:
+Mean value of student to teacher ratio is displayed for each Continent.
+
+Picture 14:
+An X-Intercept line is added at around ~24.
+
+Picture 15:
+A line is drawn from each mean value to the X-Intercept line.
+
+Picture 16:
+Facts about the plot are added. E.G: Worldwide Average: 23.5 students per teacher, the Continental average and Countries per continent is listed, and the Central African Republic has by far the most students per teacher.
+
+Picture 17:
+Arrows are drawn from the facts to the relevant informaiton on the ggplot.
+
+Picture 18:
+The size of the arrows are made smaller.
+
+Picture 19:
+The Student to Teacher Ratio grid is changed back to grids of 20 except for the first grid, which is 1-20.
+
+Picture 20:
+The samples are shown as a map of the world, seperate to the recorded data. They are distinguished by color to indicate which continent.
+
+
+## Question 2
+
+
+
+a.
+This is a Spiral Plot that shows the amount of Covid-19 Cases in the United States within the years 2020-2022.
+The 0 to 150k cases shows the first amount of recorded cases starting within March of 2020.
+You cannot accurately see the exact values of how much cases there is in a day/month, but you can get a general idea of when there were the most amount of cases.
+For example, you can see that the highest amount of recorded cases was at the start of 2022 and the amount of cases are getting higher.
+It is a very good plot for propaganda purposes as a spiral plot is more unique than a histogram or line chart, but I wouldn't recommend it among Staticians as it is difficult to get precise numbers.
+
+    
+b. 
+Advantages of the Spiral Plot:
+More eye-catching & attention grabbing than the more used, precise plots like bar charts and scatter plots.
+Since it is such a distinctive plot., it helps draw people into the conversation about the topic the plot is about.
+
+
+Disadvantages of the Spiral Plot:
+Nearly impossible to get precise values on a given day/month.
+It does not give minimum, maximum and the average amount of cases in a given month.
+
+## Question 3
+
+```{r, echo=TRUE}
+library(tidyverse)
+water <- read_csv(here::here("hwk", "Data","BathingWaterQuality2013.csv"))
+water <- mutate(water,Date= lubridate::dmy(Date))
+water4 <- filter(water, Beach %in% c("Sutton", "Portmarnock" ,"Skerries" ,"Howth - Claremont"))
+
+
+```
+
+
+a.Use dplyr count to check how many readings there are for each Beach.
+install.packages("here")
+```{r}
+water %>% count(Beach)
+```
+
+b. Calculate the mean E_Coli and mean Enterococci for the beaches.
+```{r}
+water %>% group_by(Beach) %>% summarise(meanEcoli = mean(E_Coli), meanEnter = mean(Enterococci))
+```
+
+c. Using the four beaches in water4, plot Enterococci versus date, color by Beach. Use geom_point and geom_line(). Use geom_hline(yintercept=100, color="magenta") to show the guideline value.
+```{r}
+ggplot(data=water4, mapping = aes(x=Enterococci, y= Date, color= Beach))+
+geom_point() + geom_line() + geom_hline(yintercept=100, color="magenta")
+
+```
+
+d. Repeat c. using E_Coli.
+```{r}
+ggplot(data=water4, mapping = aes(x=E_Coli, y= Date, color= Beach))+
+geom_point() + geom_line() + geom_hline(yintercept=100, color="magenta")
+
+```
+
+e. Which beach has the highest readings?  If so which beach and when?
+   Do any of the beaches exceed the guidelines? If so which beach and when? E_Coli = 2000(95%), 100(90%). Enterococci = 100(80%)
+```{r}
+water %>% filter(Enterococci == max(Enterococci))
+water %>% filter(E_Coli == max(E_Coli))
+
+water %>% filter(E_Coli > 2000)
+water %>% filter(E_Coli > 100)
+water %>% filter(Enterococci > 100)
+
+#9 E_Coli Samples are over 100.
+#As a whole, it follows the guidelines of 90% of E_Coli count is under 100. Being 90.625%
+#However, if we group sample by Beach, 1 - 1/8 is less than 90%, meaning all 6 listed beaches would be breaking guidelines.
+#2 Enterococci samples over 100. 96 Samples. Thus, 2/96 Samples = 2.1%.
+#100% - 2.1% = 97.9% are within the limit, Guidelines are followed for Enterococci, even if we group by beach.
+```
+
+
+f. Using the full water dataset use facet_wrap to show Enterococci time plots separately for all the beaches. Show the the guideline value.
+```{r}
+#ggplot(data = water, aes(x = Date, y = Enterococci)) + geom_point() + facet_wrap(vars(~Beach))
+
+water6 <- water %>% pivot_longer(c(Enterococci), names_to = "Enterococci", values_to = "Readings")
+ggplot(data = water6, aes(x = Date, y = Readings, color = Enterococci)) + 
+  geom_point() + geom_line() + geom_hline(yintercept = 100, color = "magenta")+facet_wrap(~Beach)
+```
+
+g. Repeat f. for E_Coli. 
+```{r}
+#Guideline values: Less than 2000 per 100ml for 95% of all samples.
+#Guideline values: Less than 100 per 100ml for 90% of all samples.
+water6 <- water %>% pivot_longer(c(E_Coli), names_to = "E_Coli", values_to = "Readings")
+ggplot(data = water6, aes(x = Date, y = Readings, color = E_Coli)) + 
+  geom_point() + geom_line() + geom_hline(yintercept = 100, color = "magenta")+geom_hline(yintercept = 2000, color = "magenta")+facet_wrap(~Beach)
+```
+
+h. (Advanced, optional). Show the Enterococci and E_Coli time plots overlaid for all the beaches. Use colour to distinguish the two y variables.
+```{r}
+water5 <- water %>% pivot_longer(c(Enterococci, E_Coli), names_to = "Bacteria", values_to = "Readings")
+ggplot(data = water5, aes(x = Date, y = Readings, color = Bacteria)) + 
+  geom_point() + geom_line() + geom_hline(yintercept = 100, color = "magenta")+facet_wrap(~Beach)
+```
+
+i. Write a few sentences about the water quality in the beaches.
+
+Portmarnock had an insanely high E_Coli count on 2013-08-19. Cause should be investigated.
+Howth - Claremont and Balbriggan are the dirtiest beaches on the list and should be properly cleaned.
+Portrane - Tower Bay had the lowest sample numbers among all the beaches, making it the cleanest of the bunch.
+Skerries, Rush - South Beach, Sutton & Malahide had all samples taken to be under guidelines, making them safe beaches.
+2013-08-19 is a date of interest. 3 samples from those dates break guidelines and the rise in Bacteria count is noticable even on clean beaches like Portrane - Burrow (The Brook)
+
+```
+
+
+## Question 4
+
+a. Make histograms of both Enterocci and E_Coli. Do you need the histogram to start at zero? Choose good colour and fills and a binwidth of 10. Arrange your two histograms side by side.
+```{r,  out.width="50%", fig.show='hold'}
+require(gridExtra)
+plot1<- ggplot(water, aes(x= Enterococci)) + geom_histogram(fill="red", color="black", binwidth=10)
+plot2 <- ggplot(water, aes(x= E_Coli))      + geom_histogram(fill="lightblue", color="navy", binwidth=10)
+grid.arrange(plot1, plot2, ncol=2)
+
+```
+
+
+b. Make boxplots of both Enteroccoci and E_Coli. Arrange your two boxplots side by side.
+```{r,  out.width="50%", fig.show='hold'}
+plot3 <- ggplot(water, aes(y= Enterococci)) + geom_boxplot(fill="red", color="black")
+plot4 <- ggplot(water, aes(y = E_Coli)) + geom_boxplot(fill="lightblue", color="navy")
+grid.arrange(plot3, plot4, ncol=2)
+
+```
+
+
+c. Now make side by side boxplots of Enterococci and E_Coli. For this you will need to put the data into long form:
+```{r}
+
+waterlong <- water %>% pivot_longer(c(Enterococci, E_Coli), names_to="Bacteria", values_to="Reading")
+ggplot(waterlong, aes(y = Bacteria)) + geom_boxplot(fill="lightblue", color="navy") + facet_wrap(vars(Date))
+
+```
+
+d.Write a few sentences with your findings. Mention skewness and outliers in your answer.
+
+A boxplot allows us to easily see all the outliers for the Bacteria. Using the boxplot for E_Coli, we see all outliers go past the 100 guideline. This isn't the case for Enterococci. Same amount of Outliers each.
+Only one whisker for each boxplot.
+E_Coli has the bigger box.
+
+
